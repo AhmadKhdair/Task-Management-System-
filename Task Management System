@@ -1,0 +1,815 @@
+#include <stdio.h>
+#include <malloc.h>
+#include <string.h>
+
+struct node{
+    int Id;
+    char Name[50];
+    char Date[12];
+    double Duration;
+    int state;
+    struct node* Left;
+    struct node* Right;
+};
+
+struct node* makeEmpty( struct node* T );
+struct node* findByName(char name[50],struct node* T);
+struct node* FindMin( struct node* T );
+struct node* FindMax( struct node* T );
+void printOptions();
+struct node* makeNode(int Id,char Name[50],char Date[12],double Duration);
+struct node* loadTasksFile(struct node* T);
+void viewTreeById(struct node* T);
+struct node* findById(int x, struct node* T);
+void performATaskById(int x,struct node* T);
+void performATaskByDuration(double duration,struct node* T);
+void performATaskByName(char name[],struct node* T);
+void performATaskByDate(char date[],struct node* T);
+void viewUnperformedTasksNameSort(struct node* T);
+struct node* insertById(struct node* Tnode, struct node* T );
+struct node* insertByName(struct node* Tnode, struct node* T );
+struct node* insertByDuration(struct node* Tnode, struct node* T );
+struct node* insertByDate(struct node* Tnode, struct node* T );
+int compareDate(char date1[],char date2[]);
+struct node* deleteByDuration( int duration, struct node* T );
+struct node* deleteByDate( char date[], struct node* T );
+struct node* deleteByName( char name[], struct node* T );
+struct node* deleteById( int X, struct node* T );
+struct node* findByDate(char date[], struct node* T);
+struct node* findByDuration(double duration, struct node* T);
+struct node* restructureByName(struct node* Tree, struct node* secondTree);
+struct node* restructureById(struct node* Tree, struct node* secondTree);
+struct node* restructureByDate(struct node* Tree, struct node* secondTree);
+struct node* restructureByDuration(struct node* Tree, struct node* secondTree);
+struct node* copyNode(struct node* Node);
+void viewPerformedTasksIdSort(struct node* T);
+int numOfNodes(struct node* T) ;
+int numOfLeaves(struct node* T);
+int getHeight(struct node* T) ;
+int main() {
+
+    struct node* T= NULL;
+    struct node* T2= NULL;
+    struct node* isFound;
+    int id;
+    char name[50];
+    char date[12];
+    double duration;
+    int choice=0,flag=0;
+    int restructChoice=1;// initial value is 1 cuz when i load the tasks from the file i loaded for id structure
+    while(1){
+        printOptions();
+        printf("\n Enter Your Option : ");
+        scanf("%d",&choice);
+        switch (choice) {
+            case 1:
+                if(flag==0) {
+                    T = loadTasksFile(T);
+                    printf("Task Loaded Successfully");
+                    flag=1;
+                }
+                else
+                    printf("Task Already Loaded");
+                break;
+            case 2:
+                printf("Enter Task ID: ");
+                scanf("%d",&id);
+                isFound= findById(id,T);
+                if(isFound==NULL){
+                    printf("Enter Task Name: ");
+                    gets(name);
+                    gets(name);
+                    printf("Enter Task Date: ");
+                    scanf("%s",date);
+                    printf("Enter Task Duration:");
+                    scanf("%lf",&duration);
+                    if(restructChoice==1)
+                        T= insertById(makeNode(id,name,date,duration),T);
+                    else if(restructChoice==2)
+                        T= insertByName(makeNode(id,name,date,duration),T);
+                    else if(restructChoice==3)
+                        T= insertByDate(makeNode(id,name,date,duration),T);
+                    else if(restructChoice==4)
+                        T= insertByDuration(makeNode(id,name,date,duration),T);
+                    else
+                        printf("INVALID RESTRUCT CHOICE !");
+                }
+                else{
+                    printf("The Task Is Already Exist");
+                }
+                break;
+            case 3:
+                if(restructChoice==1) {
+                    printf("Enter Id To Delete It: ");
+                    scanf("%d", &id);
+                    isFound= findById(id,T);
+                    if (isFound != NULL) {
+                        T = deleteById(id, T);
+                        printf("Task Deleted Successfully");
+                    }
+                    else
+                        printf("There is no Task With This Id To Delete It");
+                }
+                else if(restructChoice==2){
+                    printf("Enter Name To Delete It: ");
+                    gets(name);
+                    gets(name);
+                    isFound= findByName(name,T);
+                    if (isFound != NULL) {
+                        T = deleteByName(name, T);
+                        printf("Task Deleted Successfully");
+                    }
+                    else
+                        printf("There is no Task With This name To Delete It");
+                }
+                else if(restructChoice==3){
+                    printf("Enter Date To Delete It: ");
+                    gets(date);
+                    gets(date);
+                    isFound= findByDate(date,T);
+                    if(isFound!=NULL){
+                        T= deleteByDate(date,T);
+                        printf("Task Deleted Successfully");
+                    }
+                    else
+                        printf("There is no Task With This Date To Delete It");
+
+                }
+                else if(restructChoice==4){
+                    printf("Enter Id To Delete It: ");
+                    scanf("%lf", &duration);
+                    isFound= findByDuration(duration,T);
+                    if(isFound!=NULL){
+                        T= deleteByDuration(duration,T);
+                        printf("Task Deleted Successfully");
+                    }
+                    else
+                        printf("There is no Task With This Duration To Delete It");
+                }
+            break;
+            case 4:
+                if(restructChoice!=2){
+                    T2=NULL;
+                    T2= restructureByName(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                }
+                printf("Enter Task Name For Search:");
+                gets(name);
+                gets(name);
+                struct node* pointerName=findByName(name,T);
+                if(pointerName==NULL)
+                    printf("There is No Task With This Name");
+                else{
+                    printf("Task Found Information : %d %s %s %lf",pointerName->Id, pointerName->Name, pointerName->Date, pointerName->Duration);
+                }
+                if(restructChoice==1){
+                    T2=NULL;
+                    T2= restructureById(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                }
+                else if(restructChoice==3){
+                    T2=NULL;
+                    T2= restructureByDate(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                }
+                else if(restructChoice==4){
+                    T2=NULL;
+                    T2= restructureByDuration(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                }
+                break;
+            case 5:
+                if(restructChoice==1){
+                    printf("Enter Task ID to Perform :");
+                    scanf("%d",&id);
+                    performATaskById(id,T);
+                }
+                else if(restructChoice==2){
+                    printf("Enter Task Name to Perform :");
+                    gets(name);
+                    gets(name);
+                    performATaskByName(name,T);
+                }
+                else if(restructChoice==3){
+                    printf("Enter Task date to Perform :");
+                    gets(date);
+                    gets(date);
+                    performATaskByDate(date,T);
+                }
+                else if(restructChoice==4){
+                    printf("Enter Task Duration to Perform :");
+                    scanf("%lf",&duration);
+                    performATaskByDuration(duration,T);
+                }
+
+                break;
+
+            case 6:
+                if(restructChoice!=2){
+                    T2=NULL;
+                    T2= restructureByName(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                }
+                viewUnperformedTasksNameSort(T);
+                if(restructChoice==1){
+                    T2=NULL;
+                    T2= restructureById(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                }
+                else if(restructChoice==3){
+                    T2=NULL;
+                    T2= restructureByDate(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                }
+                else if(restructChoice==4){
+                    T2=NULL;
+                    T2= restructureByDuration(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                }
+                break;
+            case 7:
+
+                if(restructChoice!=1){
+                    T2=NULL;
+                    T2= restructureById(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                }
+                viewPerformedTasksIdSort(T);
+                if(restructChoice==2){
+                    T2=NULL;
+                    T2= restructureByName(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                }
+                else if(restructChoice==3){
+                    T2=NULL;
+                    T2= restructureByDate(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                }
+                else if(restructChoice==4){
+                    T2=NULL;
+                    T2= restructureByDuration(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                }
+                break;
+
+            case 8:
+                printf("\nSelect attribute to restructure the BST:\n");
+                printf("1. By Task ID\n");
+                printf("2. By Task Name\n");
+                printf("3. By Task Date\n");
+                printf("4. By Task Duration\n");
+                printf("Enter your choice: ");
+                int saveRes=restructChoice;
+                scanf("%d", &restructChoice);
+                if (restructChoice == 1) {
+                    T2 = NULL;
+                    T2= restructureById(T, T2); // i let it T2 not T , cuz i dont want to lose the original tree!! i want a pointer at the root of the original one to do make empty to it
+                    T=makeEmpty(T);
+                    T= T2;
+                    printf("\nTree has been restructured based on your choice.\n");
+                }
+
+                else if(restructChoice==2){
+                    T2=NULL;
+                    T2= restructureByName(T,T2);
+                    T=makeEmpty(T);
+                    T=T2;
+                    printf("\nTree has been restructured based on your choice.\n");
+
+                }
+
+                else if(restructChoice==3){
+                    T2=NULL;
+                    T2= restructureByDate(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                    printf("\nTree has been restructured based on your choice.\n");
+
+                }
+                else if(restructChoice==4){
+                    T2=NULL;
+                    T2= restructureByDuration(T,T2);
+                    makeEmpty(T);
+                    T=T2;
+                    printf("\nTree has been restructured based on your choice.\n");
+                }
+                else{
+                    restructChoice=saveRes; // i did that, cuz my insertion and deletion and performed functions depend on the restruct Choice so i will not let it to be an invalid to avoid any problems
+                    printf("INVALID restructured ");
+                }
+
+                break;
+            case 9:
+                int size= numOfNodes(T);
+                int leaves= numOfLeaves(T);
+                printf("The Height Of The Tree :%d\n",getHeight(T));
+                printf("The size Of The Tree :%d\n",size);
+                printf("Number of Leaves Of The Tree :%d\n",leaves);
+                printf("Number of Internal Nodes Of The Tree :%d\n",(size-leaves)); // the external nodes are the nodes which they are not leaves(internal)
+                break;
+            case 10:
+                exit(1);
+        }
+    }
+}
+
+struct node* makeEmpty( struct node* T ){
+    if( T != NULL ){
+        makeEmpty( T->Left ); // this is a way that we can use it to move at all nodes (postorder)
+        makeEmpty( T->Right ); // we can not let it as inorder cuz by applying it , we will free the root from the memory before we checked and free that right side . .
+        free( T );
+    }
+    return NULL;
+}
+
+
+struct node* findByName(char name[],struct node* T){
+    if(T==NULL)
+        return NULL;
+    else if(strcmp(name,T->Name)<0)
+        return findByName(name,T->Left);
+    else if(strcmp(name,T->Name)>0)
+        return findByName(name,T->Right);
+    else
+        return T;
+}
+
+struct node* findByDate(char date[], struct node* T) {
+    if (T == NULL)
+        return NULL;
+    else if (compareDate(date, T->Date) < 0)
+        return findByDate(date, T->Left);
+    else if (compareDate(date, T->Date) > 0)
+        return findByDate(date, T->Right);
+    else
+        return T;
+}
+
+
+struct node* FindMin( struct node* T ){
+    if( T == NULL)
+        return NULL;
+    else if( T -> Left == NULL)
+        return T;
+    else
+        return FindMin( T->Left );
+}
+
+struct node* FindMax( struct node* T ){
+    if( T == NULL) // this case will be true just when we send empty tree for the fun, other surly we will return a valid node
+        return NULL;
+    else if( T -> Right == NULL)
+        return T;
+    else
+        return FindMax( T->Right );
+}
+struct node* insertById(struct node* Tnode, struct node* T) {
+    if (T == NULL) {// if we enter this condition, this mean that we are at the place that we should add the new node at it . .
+        return Tnode;
+    }
+
+    if (Tnode->Id < T->Id) {
+        T->Left = insertById(Tnode, T->Left);
+    } else if (Tnode->Id > T->Id) {
+        T->Right = insertById(Tnode, T->Right);
+    }
+
+    return T; //note that if the task is already at the tree, we will return it, that mean no create another duplicate of it . .
+}
+
+struct node* insertByName(struct node* Tnode, struct node* T ){
+
+    if( T == NULL){ // if we enter this condition, this mean that we are at the place that we should add the new node at it . .
+        return Tnode;
+    }
+    else if(strcmp(Tnode->Name, T->Name)< 0)
+        T->Left = insertByName( Tnode, T->Left);
+    else if( strcmp(Tnode->Name, T->Name) > 0)
+        T->Right = insertByName( Tnode, T->Right );
+    return T; //note that if the task is already at the tree, we will return it, that mean no create another duplicate of it . .
+}
+
+struct node* insertByDuration(struct node* Tnode, struct node* T ){
+
+    if( T == NULL){ // if we enter this condition, this mean that we are at the place that we should add the new node at it . .
+        return Tnode;
+    }
+    else if( Tnode->Duration < T->Duration )
+        T->Left = insertByDuration( Tnode, T->Left);
+    else if( Tnode->Duration > T->Duration)
+        T->Right = insertByDuration( Tnode, T->Right );
+    return T; //note that if the task is already at the tree, we will return it, that mean no create another duplicate of it . .
+}
+struct node* insertByDate(struct node* Tnode, struct node* T ){
+
+    if( T == NULL){ // if we enter this condition, this mean that we are at the place that we should add the new node at it . .
+        return Tnode;
+    }
+    else if(compareDate(Tnode->Date,T->Date)< 0)
+        T->Left = insertByDate( Tnode, T->Left);
+    else if(compareDate(Tnode->Date,T->Date)> 0)
+        T->Right = insertByDate( Tnode, T->Right );
+    return T; //note that if the task is already at the tree, we will return it, that mean no create another duplicate of it . .
+}
+
+int compareDate(char date1[],char date2[]){ // my idea here first to divide the date, then compare year then month then day . .
+    int day1=0,month1=0,year1=0,day2=0,month2=0,year2=0; // i let the inital value 0 cuz if there is undefined date, and the another date is valid , then i will return that the date whih its valid will be greater . .
+    char date1copy[12],date2copy[12];// i should take a copy cuz i dont want to change the original date . . ( the reason of that the way of strtok are working . .
+    strcpy(date1copy,date1);
+    strcpy(date2copy,date2);
+    //First Date Divide
+    char* tok=strtok(date1copy,"/");
+    if(tok!=NULL)
+        day1= atoi(tok);
+    tok=strtok(NULL,"/");
+    if(tok!=NULL)
+        month1=atoi(tok);
+    tok = strtok(NULL, "/");
+    if(tok!=NULL)
+        year1 = atoi(tok);
+    //Second Date Divide
+    tok = strtok(date2copy, "/");
+    if(tok!=NULL)
+        day2 = atoi(tok);
+    tok = strtok(NULL, "/");
+    if(tok!=NULL)
+        month2 = atoi(tok);
+    tok = strtok(NULL, "/");
+    if(tok!=NULL)
+        year2 = atoi(tok);
+    if(year1>year2)
+        return 1;
+    else if(year2>year1)
+        return -1;
+    if(month1>month2)
+        return 1;
+    else if(month2>month1)
+        return -1;
+    if(day1>day2)
+        return 1;
+    else if(day2>day1)
+        return -1;
+    return 0; // if we reach this, that mean the date are equals . .
+}
+
+struct node* deleteById( int X, struct node* T ){
+    struct node* TmpCell;
+    if( T == NULL )
+        printf( "Element not found" );
+    else if( X < T->Id )
+        T->Left = deleteById( X, T->Left );
+    else if( X > T->Id )
+        T->Right = deleteById( X, T->Right );
+    else{
+        if( T->Left && T->Right ){
+            TmpCell = FindMin( T->Right );
+            T->Id = TmpCell->Id;
+            T->Right = deleteById( T->Id, T->Right );
+        }
+        else{
+            TmpCell = T;
+            if( T->Left == NULL )
+                T = T->Right;
+            else if( T->Right == NULL )
+                T = T->Left;
+            free( TmpCell );
+        }
+    }
+    return T;
+}
+
+struct node* deleteByName( char name[], struct node* T ){
+    struct node* TmpCell;
+    if( T == NULL )
+        printf( "Element not found" );
+    else if( strcmp(name,T->Name)<0 )
+        T->Left = deleteByName( name, T->Left );
+    else if(strcmp(name,T->Name)>0 )
+        T->Right = deleteByName( name, T->Right );
+    else{
+        if( T->Left && T->Right ){
+            TmpCell = FindMin( T->Right );
+            strcpy(T->Name,TmpCell->Name); // T->Name=TmpCell->Name;
+            T->Right = deleteByName( T->Name, T->Right );
+        }
+        else{
+            TmpCell = T;
+            if( T->Left == NULL )
+                T = T->Right;
+            else if( T->Right == NULL )
+                T = T->Left;
+            free( TmpCell );
+        }
+    }
+    return T;
+}
+
+
+struct node* deleteByDate( char date[], struct node* T ){
+    struct node* TmpCell;
+    if( T == NULL )
+        printf( "Element not found" );
+    else if(compareDate(date,T->Date)<0 )
+        T->Left = deleteByDate( date, T->Left );
+    else if(compareDate(date,T->Date)>0 )
+        T->Right = deleteByDate( date, T->Right );
+    else{
+        if( T->Left && T->Right ){
+            TmpCell = FindMin( T->Right );
+            strcpy(T->Date,TmpCell->Date); // T->Date=TmpCell->Date;
+            T->Right = deleteByDate( T->Date, T->Right );
+        }
+        else{
+            TmpCell = T;
+            if( T->Left == NULL )
+                T = T->Right;
+            else if( T->Right == NULL )
+                T = T->Left;
+            free( TmpCell );
+        }
+    }
+    return T;
+}
+
+struct node* deleteByDuration( int duration, struct node* T ){
+    struct node* TmpCell;
+    if( T == NULL )
+        printf( "element not found" );
+    else if( duration < T->Duration )
+        T->Left = deleteByDuration( duration, T->Left );
+    else if( duration > T->Duration )
+        T->Right = deleteByDuration( duration, T->Right );
+    else{
+        if( T->Left && T->Right ){
+            TmpCell = FindMin( T->Right );
+            T->Duration = TmpCell->Duration;
+            T->Right = deleteByDuration( T->Duration, T->Right );
+        }
+        else{
+            TmpCell = T;
+            if( T->Left == NULL )
+                T = T->Right;
+            else if( T->Right == NULL )
+                T = T->Left;
+            free( TmpCell );
+        }
+    }
+    return T;
+}
+
+
+void printOptions(){
+    printf("\n1. Load Tasks File\n"
+           "2. Add a New Task \n"
+           "3. Delete a Task \n"
+           "4. Search for a Task \n"
+           "5. Perform a Task \n"
+           "6. View Unperformed Tasks \n"
+           "7. View Performed Tasks \n"
+           "8. Restructure the Tasks BST \n"
+           "9. View the tasks BST info\n"
+           "10. Exit the program.\n");
+}
+
+struct node* makeNode(int Id,char Name[50],char Date[12],double Duration){
+    struct node* T=(struct node*)malloc(sizeof(struct node));
+    T->Id=Id;
+    strcpy(T->Name,Name);
+    strcpy(T->Date,Date);
+    T->Duration=Duration;
+    T->state=0; // this is as a flag to know if its performed or not, since i just make it so sure that flag should be 0 . .
+    T->Right=NULL;
+    T->Left=NULL;
+    return T;
+}
+
+
+struct node* loadTasksFile(struct node* T) {
+    FILE *file = fopen("C:\\\\Users\\\\HP\\\\Desktop\\\\untitled6\\\\task.txt", "r");
+    if (file == NULL) {
+        printf("error in opening file \n");
+        return NULL;
+    }
+    char line[75]; // this line will contain this task struct : TaskID#TaskName#TaskDate#TaskDuration
+    int taskID;
+    char taskName[50];
+    char taskDate[12];
+    double taskDuration;
+
+    while (fgets(line, 76, file)!=NULL) {
+        char *token = strtok(line, "#");
+        if (token != NULL)
+            taskID = atoi(token);
+        token = strtok(NULL, "#");
+        if (token != NULL)
+            strcpy(taskName, token);
+        token = strtok(NULL, "#");
+        if (token != NULL)
+            strcpy(taskDate, token);
+        token = strtok(NULL, "#");
+        if (token != NULL)
+            taskDuration = atof(token);
+        struct node* Tnode=makeNode(taskID, taskName, taskDate, taskDuration);
+        T=insertById(Tnode,T); // every task inserted , the function will back The original Root thats why i write T= ,
+    }
+    fclose(file);
+    return T;
+}
+
+void viewTreeById(struct node* T){ // inorder implementation so i print at as the BST sorted (by ID)
+    if(T==NULL){
+        return ;
+    }
+    viewTreeById(T->Left);
+    printf("%d %s %s %lf\n",T->Id, T->Name, T->Date, T->Duration);
+    viewTreeById(T->Right);
+}
+
+struct node* findById(int x, struct node* T){
+    if( T == NULL)
+        return NULL;
+    else if( x < T->Id )
+        return findById( x, T->Left );
+    else if( x > T->Id )
+        return findById( x, T->Right );
+    else
+        return T;
+}
+
+struct node* findByDuration(double duration, struct node* T) {
+    if (T == NULL)
+        return NULL;
+    else if (duration < T->Duration)
+        return findByDuration(duration, T->Left);
+    else if (duration > T->Duration)
+        return findByDuration(duration, T->Right);
+    else
+        return T;
+}
+
+
+
+void performATaskById(int x,struct node* T){
+    struct node* tmp= findById(x,T);
+    if(tmp!=NULL){
+        tmp->state=1; // this is as we let the flag = 1 which its mean that the task is performed . .
+        printf("task With These Information Has Been Performed :\n  %d %s %s %0.3lf",tmp->Id,tmp->Name,tmp->Date,tmp->Duration);
+    }
+    else
+        printf("there is no Task with ID: %d To Performed",x);
+}
+
+void performATaskByName(char name[],struct node* T){
+    struct node* tmp= findByName(name,T);
+    if(tmp!=NULL){
+        tmp->state=1; // this is as we let the flag = 1 which its mean that the task is performed . .
+        printf("task With These Information Has Been Performed :\n  %d %s %s %0.3lf",tmp->Id,tmp->Name,tmp->Date,tmp->Duration);
+    }
+    else
+        printf("there is no Task with name: %s To Performed",name);
+}
+
+void performATaskByDate(char date[],struct node* T){
+    struct node* tmp= findByDate(date,T);
+    if(tmp!=NULL){
+        tmp->state=1; // this is as we let the flag = 1 which its mean that the task is performed . .
+        printf("task With These Information Has Been Performed :\n  %d %s %s %0.3lf",tmp->Id,tmp->Name,tmp->Date,tmp->Duration);
+    }
+    else
+        printf("there is no Task with date: %s To Performed",date);
+}
+void performATaskByDuration(double duration,struct node* T){
+    struct node* tmp= findByDuration(duration,T);
+    if(tmp!=NULL){
+        tmp->state=1; // this is as we let the flag = 1 which its mean that the task is performed . .
+        printf("task With These Information Has Been Performed :\n  %d %s %s %0.3lf",tmp->Id,tmp->Name,tmp->Date,tmp->Duration);
+    }
+    else
+        printf("there is no Task with duration: %lf To Performed",duration);
+}
+
+void viewPerformedTasks(struct node* T){
+    if(T==NULL)
+        return ;
+    viewPerformedTasks(T->Left);
+    if(T->state==1)
+        printf("%d %s %s %lf\n",T->Id, T->Name, T->Date, T->Duration);
+    viewPerformedTasks(T->Right);
+}
+
+
+
+struct node* restructureById(struct node* Tree, struct node* secondTree){
+    if (Tree != NULL){
+        secondTree = restructureById(Tree->Left, secondTree);
+        secondTree = insertById(copyNode(Tree), secondTree);
+        secondTree = restructureById(Tree->Right, secondTree);
+    }
+    return secondTree;
+}
+
+struct node* restructureByName(struct node* Tree, struct node* secondTree){
+    if (Tree != NULL){
+        secondTree = restructureByName(Tree->Left, secondTree);
+        secondTree = insertByName(copyNode(Tree), secondTree);
+        secondTree = restructureByName(Tree->Right, secondTree);
+    }
+    return secondTree;
+}
+
+struct node* restructureByDate(struct node* Tree, struct node* secondTree){
+    if (Tree != NULL){
+        secondTree = restructureByDate(Tree->Left, secondTree);
+        secondTree = insertByDate(copyNode(Tree), secondTree);
+        secondTree = restructureByDate(Tree->Right, secondTree);
+    }
+    return secondTree;
+}
+
+struct node* restructureByDuration(struct node* Tree, struct node* secondTree){
+    if (Tree != NULL){
+        secondTree = restructureByDuration(Tree->Left, secondTree);
+        secondTree = insertByDuration(copyNode(Tree), secondTree);
+        secondTree = restructureByDuration(Tree->Right, secondTree);
+    }
+    return secondTree;
+}
+
+
+struct node* copyNode(struct node* Node){
+    struct node* copyOne = (struct node*) malloc(sizeof(struct node));
+    if(copyOne== NULL)
+        return NULL; // if there is out of memory
+    copyOne->Id = Node->Id;
+    strcpy(copyOne->Name, Node->Name);
+    strcpy(copyOne->Date, Node->Date);
+    copyOne->Duration = Node->Duration;
+    copyOne->state = Node->state;
+    copyOne->Left = NULL;
+    copyOne->Right = NULL;
+    return copyOne;
+}
+void viewUnperformedTasksNameSort(struct node* T){
+        if(T==NULL){
+            return ;
+        }
+    viewUnperformedTasksNameSort(T->Left);
+        if(T->state==0) // if state= 0 then we know that the task is unperformed so i should print it, else continuo the process
+            printf("%d %s %s %lf\n",T->Id, T->Name, T->Date, T->Duration);
+    viewUnperformedTasksNameSort(T->Right);
+}
+
+
+void viewPerformedTasksIdSort(struct node* T){
+    if(T==NULL){
+        return ;
+    }
+    viewPerformedTasksIdSort(T->Left);
+    if(T->state==1) // if state= 0 then we know that the task is unperformed so i should print it, else continuo the process
+        printf("%d %s %s %lf\n",T->Id, T->Name, T->Date, T->Duration);
+    viewPerformedTasksIdSort(T->Right);
+}
+int numOfNodes(struct node* T) {
+    if (T == NULL)
+        return 0; // when its null no nodes so 0
+    return 1 + numOfNodes(T->Left) + numOfNodes(T->Right); // that mean the sum of all nodes is 1 which its refer to the current node ( since i sure that its null cuz the fun didnt return 0
+    // so 1 plus the nodes in the left and in the right , every node we do this so i did it as recursive
+}
+int numOfLeaves(struct node* T){
+    if(T==NULL)
+        return 0;
+    if(T->Left==NULL && T->Right==NULL) // when the left and the right are null so its leave so i should return 1 . .
+        return 1;
+    return numOfLeaves(T->Left)+ numOfLeaves(T->Right); // if we reached this case, that mean the current node has 1 or 2 child, so we should check the sub trees in the right and in the left
+}
+
+int getHeight(struct node* T) {
+    if (T == NULL)
+        return 0;
+
+    int leftHeight = 0;
+    int rightHeight = 0;
+
+    if (T->Left != NULL)
+        leftHeight = getHeight(T->Left);
+    if (T->Right != NULL)
+        rightHeight = getHeight(T->Right);
+
+    if (leftHeight > rightHeight)
+        return leftHeight + 1;
+    else
+        return rightHeight + 1;
+
+}
